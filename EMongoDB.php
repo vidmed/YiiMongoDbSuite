@@ -4,7 +4,7 @@
  *
  * PHP version 5.2+
  *
- * @author		Dariusz Górecki <darek.krk@gmail.com>
+ * @author		Dariusz G贸recki <darek.krk@gmail.com>
  * @author		Invenzzia Group, open-source division of CleverIT company http://www.invenzzia.org
  * @copyright	2011 CleverIT http://www.cleverit.com.pl
  * @license		http://www.yiiframework.com/license/ BSD license
@@ -47,6 +47,11 @@ class EMongoDB extends CApplicationComponent
      */
     public $persistentConnection = false;
 
+    /**
+     * @link http://php.net/manual/en/mongo.construct.php
+     * @var string $replicaSet The name of the replica set to connect to.
+     */
+    public $replicaSet = false;
     /**
      * @var string $dbName name of the Mongo database to use
      * @since v1.0
@@ -135,15 +140,12 @@ class EMongoDB extends CApplicationComponent
 				if(empty($this->connectionString))
 					throw new EMongoException(Yii::t('yii', 'EMongoDB.connectionString cannot be empty.'));
 
+				$options = array('connect'=>$this->autoConnect);
+				if ($this->replicaSet !== false)
+					$options['replicaSet'] = $this->replicaSet;
 				if($this->persistentConnection !== false)
-					$this->_mongoConnection = new Mongo($this->connectionString, array(
-						'connect'=>$this->autoConnect,
-						'persist'=>$this->persistentConnection
-					));
-				else
-					$this->_mongoConnection = new Mongo($this->connectionString, array(
-						'connect'=>$this->autoConnect,
-					));
+					$options['persist'] = $this->persistentConnection;
+				$this->_mongoConnection = new Mongo($this->connectionString, $options);
 
 				return $this->_mongoConnection;
 			}
