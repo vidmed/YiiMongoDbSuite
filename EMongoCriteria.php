@@ -4,7 +4,7 @@
  *
  * PHP version 5.2+
  *
- * @author		Dariusz Górecki <darek.krk@gmail.com>
+ * @author		Dariusz G贸recki <darek.krk@gmail.com>
  * @author		Invenzzia Group, open-source division of CleverIT company http://www.invenzzia.org
  * @copyright	2011 CleverIT http://www.cleverit.com.pl
  * @license		http://www.yiiframework.com/license/ BSD license
@@ -28,7 +28,7 @@
  *
  * For operators list {@see EMongoCriteria::$operators}
  *
- * @author		Dariusz Górecki <darek.krk@gmail.com>
+ * @author		Dariusz G贸recki <darek.krk@gmail.com>
  * @since		v1.0
  */
 class EMongoCriteria extends CComponent
@@ -124,7 +124,8 @@ class EMongoCriteria extends CComponent
 					{
 						$this->setWorkingFields($fieldNameArray);
 						$operator = strtolower($operator);
-
+						if (is_long($value) && strlen($value) > 10)
+							$value = new MongoInt64($value);
 						$this->$fieldName($operator, $value);
 					}
 				}
@@ -179,7 +180,11 @@ class EMongoCriteria extends CComponent
 					$this->_conditions[$fieldName] = array();
 
 				foreach($conds as $operator => $value)
+				{
+					if (is_long($value) && strlen($value) > 10)
+						$value = new MongoInt64($value);
 					$this->_conditions[$fieldName][$operator] = $value;
+				}
 			}
 			else
 				$this->_conditions[$fieldName] = $conds;
@@ -348,9 +353,10 @@ class EMongoCriteria extends CComponent
 	 *                the fields in this format
 	 * @since v1.3.1
 	 */
-	public function getSelect()
+	public function getSelect($forCursor = false)
 	{
-		return $this->_select;
+		if (!$forCursor) return $this->_select;
+		return array_fill_keys($this->_select, true); // PHP 5.2.0+ required!
 	}
 
 	/**
@@ -358,17 +364,7 @@ class EMongoCriteria extends CComponent
 	 */
 	public function setSelect(array $select)
 	{
-		$this->_select = array();
-		// Convert the select array to field=>true/false format
-		foreach ($select as $key=>$value) {
-			if (is_int($key)) {
-				$this->_select[$value] = true;
-			}
-			else
-			{
-				$this->_select[$key] = $value;
-			}
-		}
+		$this->_select = $select;
 	}
 
 	/**
@@ -397,7 +393,7 @@ class EMongoCriteria extends CComponent
 	public function select(array $fieldList=null)
 	{
 		if($fieldList!==null)
-			$this->setSelect(array_merge($this->_select, $fieldList));
+			$this->_select = array_merge($this->_select, $fieldList);
 		return $this;
 	}
 
