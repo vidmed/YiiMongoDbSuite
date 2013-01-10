@@ -28,7 +28,7 @@
  *
  * For operators list {@see EMongoCriteria::$operators}
  *
- * @author		Dariusz G贸recki <darek.krk@gmail.com>
+ * @author		Dariusz Górecki <darek.krk@gmail.com>
  * @since		v1.0
  */
 class EMongoCriteria extends CComponent
@@ -447,6 +447,8 @@ class EMongoCriteria extends CComponent
 	 */
 	public function addCond($fieldName, $op, $value)
 	{
+		if (is_long($value) && strlen($value) > 10)
+			$value = new MongoInt64($value);
 		$op = self::$operators[$op];
 		
 		if($op == self::$operators['or']) 

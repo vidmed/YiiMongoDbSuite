@@ -4,7 +4,7 @@
  *
  * PHP version 5.2+
  *
- * @author		Dariusz Górecki <darek.krk@gmail.com>
+ * @author		Dariusz G贸recki <darek.krk@gmail.com>
  * @author		Invenzzia Group, open-source division of CleverIT company http://www.invenzzia.org
  * @copyright	2011 CleverIT http://www.cleverit.com.pl
  * @license		http://www.yiiframework.com/license/ BSD license
@@ -814,12 +814,10 @@ abstract class EMongoDocument extends EMongoEmbeddedDocument
 	 */
 	public function find($criteria=null)
 	{
-		Yii::trace(get_class($this).'.find()','ext.MongoDb.EMongoDocument');
-
 		if($this->beforeFind())
 		{
 			$this->applyScopes($criteria);
-
+			Yii::trace(get_class($this).'.findAll(),Query:'.self::getMongoQuery($criteria->getConditions()),'ext.MongoDb.EMongoDocument');
 			$doc = $this->getCollection()->findOne($criteria->getConditions(), $criteria->getSelect());
 
 			return $this->populateRecord($doc);
@@ -836,14 +834,11 @@ abstract class EMongoDocument extends EMongoEmbeddedDocument
 	 */
 	public function findAll($criteria=null)
 	{
-		Yii::trace(get_class($this).'.findAll()','ext.MongoDb.EMongoDocument');
-
 		if($this->beforeFind())
 		{
 			$this->applyScopes($criteria);
-
+			Yii::trace(get_class($this).'.findAll(),Query:'.self::getMongoQuery($criteria->getConditions()),'ext.MongoDb.EMongoDocument');
 			$cursor = $this->getCollection()->find($criteria->getConditions());
-
 			if($criteria->getSort() !== null)
 				$cursor->sort($criteria->getSort());
 			if($criteria->getLimit() !== null)
@@ -851,7 +846,7 @@ abstract class EMongoDocument extends EMongoEmbeddedDocument
 			if($criteria->getOffset() !== null)
 				$cursor->skip($criteria->getOffset());
 			if($criteria->getSelect())
-				$cursor->fields($criteria->getSelect());
+				$cursor->fields($criteria->getSelect(true));
 
 			if($this->getUseCursor($criteria))
 				return new EMongoCursor($cursor, $this->model());
@@ -873,8 +868,8 @@ abstract class EMongoDocument extends EMongoEmbeddedDocument
 	 */
 	public function findByPk($pk, $criteria=null)
 	{
-		Yii::trace(get_class($this).'.findByPk()','ext.MongoDb.EMongoDocument');
 		$criteria = new EMongoCriteria($criteria);
+		Yii::trace(get_class($this).'.findByPk(),Query:'.self::getMongoQuery($criteria->getConditions()),'ext.MongoDb.EMongoDocument');
 		$criteria->mergeWith($this->createPkCriteria($pk));
 
 		return $this->find($criteria);
@@ -1336,5 +1331,35 @@ abstract class EMongoDocument extends EMongoEmbeddedDocument
 		}
 
 		return $criteria;
+	}
+	
+	/**
+	 * 获取Mongo查询语句
+	 * @param array $conditions
+	 */
+	public static function getMongoQuery($conditions)
+	{
+		if (empty($conditions)) return false;
+		return CJSON::encode(self::getMongoConditions($conditions));
+	}
+	
+	/**
+	 * 转换Mongo查询条件数组为不包含object的普通数组以输出json格式的查询语句
+	 * @param array $array
+	 * @return array
+	 */
+	public static function getMongoConditions($array)
+	{
+		foreach ($array as $k => $v)
+		{
+			if (is_array($v))
+				$array[$k] = self::getMongoConditions($v);
+			else 
+			{
+				if (is_object($v) && $v instanceof MongoInt64)
+					$array[$k] = $v->value;
+			}
+		}
+		return $array;
 	}
 }
