@@ -4,7 +4,7 @@
  *
  * PHP version 5.2+
  *
- * @author		Dariusz G贸recki <darek.krk@gmail.com>
+ * @author		Dariusz Górecki <darek.krk@gmail.com>
  * @author		Invenzzia Group, open-source division of CleverIT company http://www.invenzzia.org
  * @copyright	2011 CleverIT http://www.cleverit.com.pl
  * @license		http://www.yiiframework.com/license/ BSD license
@@ -145,7 +145,10 @@ class EMongoDB extends CApplicationComponent
 					$options['replicaSet'] = $this->replicaSet;
 				if($this->persistentConnection !== false)
 					$options['persist'] = $this->persistentConnection;
-				$this->_mongoConnection = new Mongo($this->connectionString, $options);
+				if (class_exists('MongoClient')) // for php Mongo extends: PECL mongoclient >=1.3.0.
+					$this->_mongoConnection = new MongoClient($this->connectionString, $options);
+				else
+					$this->_mongoConnection = new Mongo($this->connectionString, $options);
 
 				return $this->_mongoConnection;
 			}

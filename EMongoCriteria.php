@@ -4,7 +4,7 @@
  *
  * PHP version 5.2+
  *
- * @author		Dariusz G贸recki <darek.krk@gmail.com>
+ * @author		Dariusz Górecki <darek.krk@gmail.com>
  * @author		Invenzzia Group, open-source division of CleverIT company http://www.invenzzia.org
  * @copyright	2011 CleverIT http://www.cleverit.com.pl
  * @license		http://www.yiiframework.com/license/ BSD license
