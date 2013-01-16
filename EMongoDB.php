@@ -48,10 +48,19 @@ class EMongoDB extends CApplicationComponent
     public $persistentConnection = false;
 
     /**
+     * true or string(mongo set replica "set" name)
      * @link http://php.net/manual/en/mongo.construct.php
      * @var string $replicaSet The name of the replica set to connect to.
      */
     public $replicaSet = false;
+    
+    /**
+     * 
+     * @var for Mongo php extends 1.3.2
+     */
+    public $readPreference = null;
+    
+    public $timeout = 1000;
     /**
      * @var string $dbName name of the Mongo database to use
      * @since v1.0
@@ -143,10 +152,15 @@ class EMongoDB extends CApplicationComponent
 				$options = array('connect'=>$this->autoConnect);
 				if ($this->replicaSet !== false)
 					$options['replicaSet'] = $this->replicaSet;
-				if($this->persistentConnection !== false)
+				if(class_exists('MongoClient') && $this->persistentConnection !== false)
 					$options['persist'] = $this->persistentConnection;
 				if (class_exists('MongoClient')) // for php Mongo extends: PECL mongoclient >=1.3.0.
+				{
+					// Read priorities from slave
+					if ($this->readPreference === null)
+						$options['readPreference'] = MongoClient::RP_SECONDARY_PREFERRED;
 					$this->_mongoConnection = new MongoClient($this->connectionString, $options);
+				}
 				else
 					$this->_mongoConnection = new Mongo($this->connectionString, $options);
 
