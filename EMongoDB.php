@@ -152,9 +152,9 @@ class EMongoDB extends CApplicationComponent
 				$options = array('connect'=>$this->autoConnect);
 				if ($this->replicaSet !== false)
 					$options['replicaSet'] = $this->replicaSet;
-				if(class_exists('MongoClient') && $this->persistentConnection !== false)
+				if(class_exists('MongoClient', false) && $this->persistentConnection !== false)
 					$options['persist'] = $this->persistentConnection;
-				if (class_exists('MongoClient')) // for php Mongo extends: PECL mongoclient >=1.3.0.
+				if (class_exists('MongoClient', false)) // for php Mongo extends: PECL mongoclient >=1.3.0.
 				{
 					// Read priorities from slave
 					if ($this->readPreference === null)
