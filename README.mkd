@@ -11,6 +11,11 @@ to fix some major bugs, and add full featured suite for [MongoDB](http://www.mon
 
 *Work-around for using the `OR` operator with this extension provided in [comments](http://www.yiiframework.com/extension/yiimongodbsuite/#c2450)*
 
+## Added from Alex Collin 09.08.2014
+
+- Compatibility with php5.5 and MongoClient 1.5.2
+- Safe mode in the Mongo library is deprecated (Error: "The 'safe' option is deprecated, please use 'w' instead")
+
 This is the 1.3.6 release
 
 ## Added in this release:

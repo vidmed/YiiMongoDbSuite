@@ -606,7 +606,11 @@ abstract class EMongoDocument extends EMongoEmbeddedDocument
 						unset($rawData[$key]);
 				}
 			}
-
+            if (class_exists('MongoClient', false)) { // for php Mongo extends: PECL mongoclient >=1.3.0.
+                    $result = $this->getCollection()->insert($rawData, array(
+                        'fsync'	=> $this->getFsyncFlag(),
+                    ));
+            } else
 			if(version_compare(Mongo::VERSION, '1.0.5','>=') === true)
 				$result = $this->getCollection()->insert($rawData, array(
 					'fsync'	=> $this->getFsyncFlag(),
@@ -669,6 +673,16 @@ abstract class EMongoDocument extends EMongoEmbeddedDocument
 			{
 				if(isset($rawData['_id']) === true)
 					unset($rawData['_id']);
+                if (class_exists('MongoClient', false)) { // for php Mongo extends: PECL mongoclient >=1.3.0.
+                    $result = $this->getCollection()->update(
+                        array('_id' => $this->_id),
+                        array('$set' => $rawData),
+                        array(
+                            'fsync'=>$this->getFsyncFlag(),
+                            'multiple'=>false
+                        )
+                    );
+                }  else
 				$result = $this->getCollection()->update(
 					array('_id' => $this->_id),
 					array('$set' => $rawData),
@@ -679,6 +693,11 @@ abstract class EMongoDocument extends EMongoEmbeddedDocument
 					)
 				);
 			} else {
+                if (class_exists('MongoClient', false)) { // for php Mongo extends: PECL mongoclient >=1.3.0.
+                    $result = $this->getCollection()->save($rawData, array(
+                        'fsync'	=> $this->getFsyncFlag(),
+                    ));
+                } else
 				if(version_compare(Mongo::VERSION, '1.0.5','>=') === true)
 					$result = $this->getCollection()->save($rawData, array(
 						'fsync'=>$this->getFsyncFlag(),
@@ -711,6 +730,13 @@ abstract class EMongoDocument extends EMongoEmbeddedDocument
 		if($modifier->canApply === true)
 		{
 			$this->applyScopes($criteria);
+            if (class_exists('MongoClient', false)) { // for php Mongo extends: PECL mongoclient >=1.3.0.
+                $result = $this->getCollection()->update($criteria->getConditions(), $modifier->getModifiers(), array(
+                    'fsync'=>$this->getFsyncFlag(),
+                    'upsert'=>false,
+                    'multiple'=>true
+                ));
+            } else
 			if(version_compare(Mongo::VERSION, '1.0.5','>=') === true)
 				$result = $this->getCollection()->update($criteria->getConditions(), $modifier->getModifiers(), array(
 					'fsync'=>$this->getFsyncFlag(),
@@ -771,7 +797,12 @@ abstract class EMongoDocument extends EMongoEmbeddedDocument
 		Yii::trace(get_class($this).'.deleteByPk()','ext.MongoDb.EMongoDocument');
 		$this->applyScopes($criteria);
 		$criteria->mergeWith($this->createPkCriteria($pk));
-
+        if (class_exists('MongoClient', false)) { // for php Mongo extends: PECL mongoclient >=1.3.0.
+            $result = $this->getCollection()->remove($criteria->getConditions(), array(
+                'justOne'=>true,
+                'fsync'=>$this->getFsyncFlag(),
+            ));
+        } else
 		if(version_compare(Mongo::VERSION, '1.0.5','>=') === true)
 			$result = $this->getCollection()->remove($criteria->getConditions(), array(
 				'justOne'=>true,
@@ -981,7 +1012,12 @@ abstract class EMongoDocument extends EMongoEmbeddedDocument
 	{
 		Yii::trace(get_class($this).'.deleteByPk()','ext.MongoDb.EMongoDocument');
 		$this->applyScopes($criteria);
-
+        if (class_exists('MongoClient', false)) { // for php Mongo extends: PECL mongoclient >=1.3.0.
+            return $this->getCollection()->remove($criteria->getConditions(), array(
+                'justOne'=>false,
+                'fsync'=>$this->getFsyncFlag(),
+            ));
+        } else
 		if(version_compare(Mongo::VERSION, '1.0.5','>=') === true)
 			return $this->getCollection()->remove($criteria->getConditions(), array(
 				'justOne'=>false,
